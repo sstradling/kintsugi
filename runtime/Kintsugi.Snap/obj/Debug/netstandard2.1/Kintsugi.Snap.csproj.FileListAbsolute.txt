@@ -1,0 +1,10 @@
+/workspace/runtime/Kintsugi.Snap/bin/Debug/netstandard2.1/Kintsugi.Snap.deps.json
+/workspace/runtime/Kintsugi.Snap/bin/Debug/netstandard2.1/Kintsugi.Snap.dll
+/workspace/runtime/Kintsugi.Snap/bin/Debug/netstandard2.1/Kintsugi.Snap.pdb
+/workspace/runtime/Kintsugi.Snap/obj/Debug/netstandard2.1/Kintsugi.Snap.GeneratedMSBuildEditorConfig.editorconfig
+/workspace/runtime/Kintsugi.Snap/obj/Debug/netstandard2.1/Kintsugi.Snap.AssemblyInfoInputs.cache
+/workspace/runtime/Kintsugi.Snap/obj/Debug/netstandard2.1/Kintsugi.Snap.AssemblyInfo.cs
+/workspace/runtime/Kintsugi.Snap/obj/Debug/netstandard2.1/Kintsugi.Snap.csproj.CoreCompileInputs.cache
+/workspace/runtime/Kintsugi.Snap/obj/Debug/netstandard2.1/Kintsugi.Snap.sourcelink.json
+/workspace/runtime/Kintsugi.Snap/obj/Debug/netstandard2.1/Kintsugi.Snap.dll
+/workspace/runtime/Kintsugi.Snap/obj/Debug/netstandard2.1/Kintsugi.Snap.pdb

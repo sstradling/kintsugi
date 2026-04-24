@@ -1,0 +1,5 @@
+is_global = true
+build_property.RootNamespace = Kintsugi.Snap
+build_property.ProjectDir = /workspace/runtime/Kintsugi.Snap/
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
