@@ -81,8 +81,9 @@ The conceit is **not** novel; the closest precedents are:
   plays, finished piece is saved to the shelf.
 
 ### 3.2 Non-goals (zen tenet)
-- No timer, score, star rating, life/heart system, ad interstitial during
-  play, or "wrong piece" fail flash.
+- No timer, score, star rating, life/heart system, **ad interstitial during
+  play** (ads are between-puzzle only — see decision D4), no ads on the
+  finisher animation, no "wrong piece" fail flash.
 - No leaderboards. (Possibly opt-in shelf sharing — see §6.)
 
 ### 3.3 Meta layer
@@ -164,7 +165,7 @@ The conceit is **not** novel; the closest precedents are:
 | D1 | **Snap distance is world-space, scaled to assembly bounding-sphere radius.** Starting tolerance: **1.5% of bounding-sphere radius**, tunable per puzzle. | Replaces the literal "10 px" in the brief — pixels would feel punishing on small pieces and trivial on large ones. |
 | D2 | **Tray pieces are orientation-locked to the camera while held.** They do not rotate at all relative to the player's view. The player rotates the **assembly** to align it with the held piece. | This means snap-orientation matching is computed by comparing the held piece's *world* orientation against `(assemblyRotation · pieceTargetLocalRotation)`. |
 | D3 | **Piece-count range per puzzle: 8–60 (initial).** Floor and ceiling drive memory budgets, tray UI layout, and snap-tolerance auto-scaling. | Revisit after Phase 1 player testing. |
-| D4 | **Monetization: premium purchase + IAP filler packs, with interstitial ads every 2–3 completed puzzles.** | **⚠ Tension flagged:** combining premium pricing with interstitial ads is unusual and risks store reviews / refunds. Revisit before Phase 4 — likely candidates: (a) ads only in a free trial mode, (b) ads removable by IAP, (c) drop interstitials and rely on filler-pack IAP only. |
+| D4 | **Monetization: free with interstitial ads every 2–3 completed puzzles, premium one-time IAP removes all ads, plus cosmetic IAP filler packs available to all players.** | "Premium" here is the ad-removal IAP, not a paid app. Implications: a single SKU codepath gates all ad calls; filler-pack IAPs are independent of the ad-removal SKU; analytics must track conversion from free-with-ads to ad-removed (the dominant funnel). The free tier must remain genuinely playable end-to-end — interstitials only between puzzles, never mid-puzzle, never on the finisher animation. |
 
 ### 6.2 Still open
 
@@ -222,9 +223,20 @@ content.
 
 ### 8.1 External services / SDKs
 - Apple App Store Connect + Google Play Console accounts.
-- **In-app purchase**: Unity IAP + StoreKit 2 / Google Billing v6.
+- **In-app purchase**: Unity IAP + StoreKit 2 / Google Billing v6 (used
+  for both the ad-removal SKU and cosmetic filler-pack SKUs per D4).
+- **Ad mediation**: AppLovin MAX or Google AdMob — interstitial only,
+  never rewarded video, never banners, between-puzzle only. Mediator
+  choice deferred until Phase 4; both are evaluated for COPPA / age-
+  rating compliance and EU consent (CMP) support. The ad call site is
+  abstracted behind a single `IAdGate` interface so swapping mediators
+  is a one-file change.
 - **Cloud save** (optional): iCloud Key-Value / Play Games Saved Games.
-- **Analytics** (opt-in): Unity Analytics or PostHog.
+  The ad-removal entitlement must be restored from the store on reinstall
+  rather than read from cloud save (store-of-record is the only audit-
+  proof source).
+- **Analytics** (opt-in): Unity Analytics or PostHog. Funnel must include
+  free-to-ad-removed conversion (the dominant revenue funnel under D4).
 - **Crash reporting**: Unity Cloud Diagnostics or Sentry.
 - **CDN for streamed puzzle packs** (optional, post-launch).
 
@@ -354,9 +366,15 @@ Data model essentials:
 - Localization pass.
 
 ### Phase 4 — Store readiness
-- IAP wired (filler packs and/or puzzle packs depending on §6 q7).
+- IAP wired per D4: ad-removal SKU + cosmetic filler-pack SKUs.
+- Ad mediator integrated behind the `IAdGate` abstraction; interstitial
+  cadence (every 2–3 completed puzzles) tunable via remote config so we
+  can adjust without a release.
+- Restore-purchases flow tested on both stores.
+- CMP / consent flow (GDPR, ATT, Google UMP) wired ahead of ads.
 - Privacy manifest, age rating, store listings, trailer.
-- Soft launch in 1–2 territories; observe retention/conversion.
+- Soft launch in 1–2 territories; observe retention and free-to-ad-
+  removed conversion.
 - Crash + analytics dashboards.
 
 ### Post-launch (not v1)
@@ -407,15 +425,16 @@ once the Blender exporter is solid, puzzles become an art-and-config
 workflow rather than an engineering one, which is the right shape for a
 small team shipping a catalog.
 
-**Suggested next steps / improvements.** Before any feature code is
-written, two things should happen: (1) the open questions in §6 should be
-closed (especially q1, q2, q5, q7), because they materially change the
-runtime data model and the monetization-driven UI; and (2) a one-week
-gesture-model prototype on a real device should be built and handed to
-3–5 non-team players, because the *feel* of orbit-vs-drag on touch is
-the dominant determinant of whether this game is pleasant or
-frustrating, and it is the one thing this plan cannot validate on paper.
-A reasonable improvement to the plan itself would be to add an explicit
-**telemetry spec** (which events define "did the player enjoy this?")
-once monetization is decided, since the metrics for a premium title and
-a free-with-IAP title are very different and should not be retrofitted.
+**Suggested next steps / improvements.** With monetization now settled
+on free-with-ads + ad-removal IAP + cosmetic filler-pack IAPs (D4), two
+follow-ons matter most: (1) a **telemetry spec** for the free-to-ad-
+removed conversion funnel, including ad-impression counts per session,
+puzzles-completed-before-conversion, and filler-pack attach rate — these
+are the metrics that decide whether the title is economically viable
+and they should not be retrofitted; and (2) a gesture-model prototype on
+a real device handed to 3–5 non-team players, because the *feel* of
+orbit-vs-drag on touch is the dominant determinant of whether this game
+is pleasant or frustrating and it is the one thing this plan cannot
+validate on paper. The remaining open questions in §6.2 (subassembly
+merging, hint mode, audio direction, content target) can be closed in
+parallel without blocking either of these.
