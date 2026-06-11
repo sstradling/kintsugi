@@ -81,8 +81,9 @@ The conceit is **not** novel; the closest precedents are:
   plays, finished piece is saved to the shelf.
 
 ### 3.2 Non-goals (zen tenet)
-- No timer, score, star rating, life/heart system, ad interstitial during
-  play, or "wrong piece" fail flash.
+- No timer, score, star rating, life/heart system, **ad interstitial during
+  play** (per D4 ads are between-puzzle only), no ads on the finisher
+  animation, no "wrong piece" fail flash.
 - No leaderboards. (Possibly opt-in shelf sharing — see §6.)
 
 ### 3.3 Meta layer
@@ -227,9 +228,22 @@ The conceit is **not** novel; the closest precedents are:
 
 ### 8.1 External services / SDKs
 - Apple App Store Connect + Google Play Console accounts.
-- **In-app purchase**: Unity IAP + StoreKit 2 / Google Billing v6.
+- **In-app purchase**: Unity IAP + StoreKit 2 / Google Billing v6 (used
+  for both the ad-removal SKU and cosmetic filler-pack SKUs per D4).
+- **Ad mediation**: AppLovin MAX or Google AdMob — interstitial only,
+  never rewarded video for non-hint flows, never banners, between-puzzle
+  only. Mediator choice deferred until Phase 4; both are evaluated for
+  COPPA / age-rating compliance and EU consent (CMP) support. The ad
+  call site is abstracted behind the `IAdGate` interface in
+  `Kintsugi.Monetization` (already implemented) so swapping mediators
+  is a one-file change.
 - **Cloud save** (optional): iCloud Key-Value / Play Games Saved Games.
-- **Analytics** (opt-in): Unity Analytics or PostHog.
+  The ad-removal entitlement must be restored from the store on
+  reinstall rather than read from cloud save (store-of-record is the
+  only audit-proof source).
+- **Analytics** (opt-in): Unity Analytics or PostHog. Funnel must
+  include free-to-ad-removed conversion (the dominant revenue funnel
+  under D4); see the telemetry spec referenced in §13.
 - **Crash reporting**: Unity Cloud Diagnostics or Sentry.
 - **CDN for streamed puzzle packs** (optional, post-launch).
 
@@ -359,9 +373,18 @@ Data model essentials:
 - Localization pass.
 
 ### Phase 4 — Store readiness
-- IAP wired (filler packs and/or puzzle packs depending on §6 q7).
+- IAP wired per D4: ad-removal SKU + cosmetic filler-pack SKUs (Sku
+  constants already defined in `Kintsugi.Monetization`).
+- Ad mediator integrated behind the existing `IAdGate` abstraction;
+  interstitial cadence (every 2–3 completed puzzles) tunable via remote
+  config so we can adjust without a release.
+- Hint metering (`IHintGate`) wired to rewarded-ad and IAP-credit
+  callbacks per D6.
+- Restore-purchases flow tested on both stores.
+- CMP / consent flow (GDPR, ATT, Google UMP) wired ahead of ads.
 - Privacy manifest, age rating, store listings, trailer.
-- Soft launch in 1–2 territories; observe retention/conversion.
+- Soft launch in 1–2 territories; observe retention and free-to-
+  ad-removed conversion.
 - Crash + analytics dashboards.
 
 ### Post-launch (not v1)
@@ -412,15 +435,18 @@ once the Blender exporter is solid, puzzles become an art-and-config
 workflow rather than an engineering one, which is the right shape for a
 small team shipping a catalog.
 
-**Suggested next steps / improvements.** Before any feature code is
-written, two things should happen: (1) the open questions in §6 should be
-closed (especially q1, q2, q5, q7), because they materially change the
-runtime data model and the monetization-driven UI; and (2) a one-week
-gesture-model prototype on a real device should be built and handed to
-3–5 non-team players, because the *feel* of orbit-vs-drag on touch is
-the dominant determinant of whether this game is pleasant or
-frustrating, and it is the one thing this plan cannot validate on paper.
-A reasonable improvement to the plan itself would be to add an explicit
-**telemetry spec** (which events define "did the player enjoy this?")
-once monetization is decided, since the metrics for a premium title and
-a free-with-IAP title are very different and should not be retrofitted.
+**Suggested next steps / improvements.** With monetization settled on
+free-with-ads + ad-removal IAP + cosmetic filler-pack IAPs (D4) and the
+runtime gates already implemented in `Kintsugi.Monetization`, two
+follow-ons matter most: (1) a **telemetry spec** for the
+free-to-ad-removed conversion funnel — ad-impression counts per
+session, puzzles-completed-before-conversion, hint-consumption rate,
+filler-pack attach rate — these are the metrics that decide whether the
+title is economically viable and they should not be retrofitted; and
+(2) a gesture-model prototype on a real device handed to 3–5 non-team
+players, because the *feel* of orbit-vs-drag on touch is the dominant
+determinant of whether this game is pleasant or frustrating and it is
+the one thing this plan cannot validate on paper. The remaining open
+questions in §6.3 (progression model, account/cloud-save, AR, photo
+mode, filler unlock cadence, audio direction, content target,
+live-ops) can be closed in parallel without blocking either of these.
