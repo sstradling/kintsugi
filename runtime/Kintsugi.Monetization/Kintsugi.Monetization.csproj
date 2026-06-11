@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>10</LangVersion>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>Kintsugi.Monetization</RootNamespace>
+    <AssemblyName>Kintsugi.Monetization</AssemblyName>
+    <PackageId>Kintsugi.Monetization</PackageId>
+    <Description>
+      Engine-agnostic monetization gates for the Kintsugi game:
+      entitlements (which IAP SKUs does the player own), interstitial
+      ad cadence (per design decision D4), and hint metering (per D6).
+      All runtime decisions are pure-function so they can be
+      unit-tested with dotnet test, no Unity required.
+    </Description>
+  </PropertyGroup>
+
+</Project>
