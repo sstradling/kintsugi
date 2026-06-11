@@ -109,6 +109,60 @@ def test_seam_rejects_non_canonical_construction() -> None:
         Seam("z", "a", (Vec3(0, 0, 0),))
 
 
+def test_hint_order_round_trips(tmp_path: Path) -> None:
+    m = _two_piece_manifest()
+    m.hint_order = ("b",)
+    path = tmp_path / "m.json"
+    write_manifest(m, path)
+    loaded = load_manifest(path)
+    assert loaded.hint_order == ("b",)
+
+
+def test_hint_order_rejects_starter() -> None:
+    m = _two_piece_manifest()
+    m.hint_order = ("a", "b")
+    with pytest.raises(ValueError, match="must not contain the starter"):
+        m.validate()
+
+
+def test_hint_order_rejects_unknown_piece() -> None:
+    m = _two_piece_manifest()
+    m.hint_order = ("ghost",)
+    with pytest.raises(ValueError, match="unknown piece"):
+        m.validate()
+
+
+def test_hint_order_rejects_duplicate() -> None:
+    m = _two_piece_manifest()
+    m.hint_order = ("b", "b")
+    with pytest.raises(ValueError, match="duplicate"):
+        m.validate()
+
+
+def test_hint_order_rejects_incomplete() -> None:
+    m = PuzzleManifest(
+        id="t",
+        display_name="t",
+        starter_piece_id="a",
+        pieces=[
+            PieceSpec("a", "pieces/a.obj", Vec3(0, 0, 0), Quat.identity(), ("b", "c")),
+            PieceSpec("b", "pieces/b.obj", Vec3(1, 0, 0), Quat.identity(), ("a",)),
+            PieceSpec("c", "pieces/c.obj", Vec3(0, 1, 0), Quat.identity(), ("a",)),
+        ],
+        seams=[],
+        bounding_radius=1.0,
+        hint_order=("b",),
+    )
+    with pytest.raises(ValueError, match="incomplete"):
+        m.validate()
+
+
+def test_empty_hint_order_is_allowed() -> None:
+    m = _two_piece_manifest()
+    m.hint_order = ()
+    m.validate()
+
+
 def test_load_manifest_validates(tmp_path: Path) -> None:
     bad = {
         "schema_version": 1,

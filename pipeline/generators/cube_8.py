@@ -16,6 +16,7 @@ from __future__ import annotations
 from itertools import product
 from pathlib import Path
 
+from ..hint_graph import compute_hint_order
 from ..manifest import PieceSpec, PuzzleManifest, Quat, Seam, Vec3
 from ..obj_io import TriMesh, write_obj
 
@@ -158,6 +159,7 @@ def generate_cube_8(out_dir: str | Path) -> PuzzleManifest:
         seams=seams,
         bounding_radius=bounding_radius,
     )
+    manifest.hint_order = compute_hint_order(manifest)
     from ..manifest import write_manifest
     write_manifest(manifest, out / "manifest.json")
     return manifest

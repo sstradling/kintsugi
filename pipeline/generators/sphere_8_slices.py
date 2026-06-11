@@ -20,6 +20,7 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+from ..hint_graph import compute_hint_order
 from ..manifest import PieceSpec, PuzzleManifest, Quat, Seam, Vec3, write_manifest
 from ..obj_io import TriMesh, write_obj
 
@@ -215,5 +216,6 @@ def generate_sphere_8_slices(out_dir: str | Path) -> PuzzleManifest:
         seams=seams,
         bounding_radius=1.0,
     )
+    manifest.hint_order = compute_hint_order(manifest)
     write_manifest(manifest, out / "manifest.json")
     return manifest
