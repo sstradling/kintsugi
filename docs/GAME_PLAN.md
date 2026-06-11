@@ -169,9 +169,18 @@ The conceit is **not** novel; the closest precedents are:
 3. **Subassembly merging?** May the player join two tray pieces to each
    other off the assembly first? Or strictly tray↔assembly? (Affects data
    model significantly.)
-4. **Hint / assist mode?** Optional ghost outline of the next piece's
-   destination, or "show me where this goes" button? Important for
-   accessibility and for very high piece counts.
+4. ~~**Hint / assist mode?**~~ **Decided (D6):** every puzzle gets a
+   small, fixed allowance of free hints (e.g. 3 per puzzle, tunable via
+   remote config). Additional hints are unlocked by either watching a
+   rewarded interstitial or owning the ad-removal IAP (in which case
+   hints are uncapped). The pipeline pre-computes a recommended
+   placement order for each puzzle's non-starter pieces and bakes it
+   into the manifest as `hint_order`; the runtime simply walks this
+   list. The algorithm prefers the most-constrained piece next (most
+   already-placed neighbours), with lexicographic tie-breaking for
+   determinism. The metering layer — counting free hints, gating
+   additional hints behind IAP or ad views — lives in the runtime
+   `Kintsugi.Monetization` library, not the pipeline.
 5. **Piece-count range per puzzle?** 8 / 25 / 50 / 100? Drives shader,
    memory, and snap-tolerance auto-scaling.
 6. **Difficulty / progression model.** Themed packs, linear unlock, daily

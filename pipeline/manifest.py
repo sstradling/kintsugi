@@ -150,6 +150,14 @@ class PuzzleManifest:
     ``bounding_radius`` is the radius of the assembly's bounding sphere
     in local-space units; it is used by the runtime to compute the
     snap-distance tolerance per decision D1 (default 1.5% of this value).
+
+    ``hint_order`` is the recommended sequence in which the *non-starter*
+    pieces should be placed, baked at build time by
+    :func:`pipeline.hint_graph.compute_hint_order`. Per decision D6 the
+    runtime gates hint usage behind the monetization layer; this field
+    only describes *which* piece to reveal next, not when. Empty
+    ``hint_order`` means "no recommended sequence" (the runtime then
+    falls back to its own ordering or disables hints entirely).
     """
 
     id: str
@@ -158,6 +166,7 @@ class PuzzleManifest:
     pieces: list[PieceSpec]
     seams: list[Seam]
     bounding_radius: float
+    hint_order: tuple[str, ...] = field(default_factory=tuple)
     schema_version: int = SCHEMA_VERSION
 
     def piece_ids(self) -> set[str]:
@@ -221,6 +230,29 @@ class PuzzleManifest:
                     f"seam {seam.piece_a!r}<->{seam.piece_b!r} present but pieces "
                     f"are not listed as neighbors"
                 )
+        if self.hint_order:
+            expected = ids - {self.starter_piece_id}
+            seen: set[str] = set()
+            for pid in self.hint_order:
+                if pid == self.starter_piece_id:
+                    raise ValueError(
+                        f"hint_order must not contain the starter piece "
+                        f"{self.starter_piece_id!r}; the starter is pre-placed"
+                    )
+                if pid not in ids:
+                    raise ValueError(
+                        f"hint_order references unknown piece {pid!r}"
+                    )
+                if pid in seen:
+                    raise ValueError(
+                        f"hint_order contains duplicate piece {pid!r}"
+                    )
+                seen.add(pid)
+            missing = expected - seen
+            if missing:
+                raise ValueError(
+                    f"hint_order is incomplete: missing {sorted(missing)}"
+                )
 
     def to_dict(self) -> dict:
         return {
@@ -229,6 +261,7 @@ class PuzzleManifest:
             "display_name": self.display_name,
             "starter_piece_id": self.starter_piece_id,
             "bounding_radius": self.bounding_radius,
+            "hint_order": list(self.hint_order),
             "pieces": [
                 {
                     "id": p.id,
@@ -276,6 +309,7 @@ class PuzzleManifest:
             pieces=pieces,
             seams=seams,
             bounding_radius=float(data["bounding_radius"]),
+            hint_order=tuple(data.get("hint_order", ())),
             schema_version=int(data.get("schema_version", SCHEMA_VERSION)),
         )
 
