@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kintsugi.Snap", "Kintsugi.Snap\Kintsugi.Snap.csproj", "{32C7A1EB-FEF9-454A-9BD4-0ACDEA0A9AAB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kintsugi.Snap.Tests", "Kintsugi.Snap.Tests\Kintsugi.Snap.Tests.csproj", "{B9C45AD8-10AE-48B4-A3BB-59EC73F403E1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{32C7A1EB-FEF9-454A-9BD4-0ACDEA0A9AAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32C7A1EB-FEF9-454A-9BD4-0ACDEA0A9AAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32C7A1EB-FEF9-454A-9BD4-0ACDEA0A9AAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32C7A1EB-FEF9-454A-9BD4-0ACDEA0A9AAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9C45AD8-10AE-48B4-A3BB-59EC73F403E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9C45AD8-10AE-48B4-A3BB-59EC73F403E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9C45AD8-10AE-48B4-A3BB-59EC73F403E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9C45AD8-10AE-48B4-A3BB-59EC73F403E1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

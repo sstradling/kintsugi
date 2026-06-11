@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>10</LangVersion>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>Kintsugi.Snap</RootNamespace>
+    <AssemblyName>Kintsugi.Snap</AssemblyName>
+    <PackageId>Kintsugi.Snap</PackageId>
+    <Description>
+      Pure-math snap resolver for the Kintsugi puzzle game.
+      Engine-agnostic so it can run inside Unity (netstandard2.1)
+      and be unit-tested with plain dotnet test.
+    </Description>
+  </PropertyGroup>
+
+</Project>
