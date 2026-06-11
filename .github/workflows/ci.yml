@@ -1,0 +1,64 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  pipeline-tests:
+    name: pipeline (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install pytest
+        run: python -m pip install --upgrade pip pytest
+
+      - name: Run pipeline tests
+        run: python -m pytest tests/pipeline -v
+
+      - name: Build all starter puzzle bundles (smoke)
+        if: hashFiles('pipeline/cli.py') != ''
+        run: python -m pipeline.cli build all --out build/
+
+  runtime-tests:
+    name: runtime (dotnet test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('runtime/**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore
+        working-directory: runtime
+        run: dotnet restore
+
+      - name: Build
+        working-directory: runtime
+        run: dotnet build --configuration Release --no-restore /warnaserror
+
+      - name: Test
+        working-directory: runtime
+        run: dotnet test --configuration Release --no-build --verbosity normal
