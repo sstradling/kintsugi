@@ -155,46 +155,42 @@ The conceit is **not** novel; the closest precedents are:
 
 ---
 
-## 6. Open questions (please answer before coding)
+## 6. Decisions & open questions
 
-1. **Snap tolerance "10 px" — screen pixels or world units?** 10 screen px
-   on a 6" phone is ~0.5 mm, which would feel punishing on a small piece
-   and trivial on a giant one. Recommendation: **interpret as world-space
-   distance scaled to the assembly's bounding-sphere radius** (e.g. 1.5%
-   of bounding radius), and tune. Confirm.
-2. **Are tray pieces orientation-locked to the camera, the assembly, or
-   the world?** The brief says "cannot rotate." Camera-locked is most
-   intuitive (the piece visually matches what the player will see when it
-   snaps). Confirm.
-3. **Subassembly merging?** May the player join two tray pieces to each
-   other off the assembly first? Or strictly tray↔assembly? (Affects data
-   model significantly.)
-4. **Hint / assist mode?** Optional ghost outline of the next piece's
-   destination, or "show me where this goes" button? Important for
-   accessibility and for very high piece counts.
-5. **Piece-count range per puzzle?** 8 / 25 / 50 / 100? Drives shader,
-   memory, and snap-tolerance auto-scaling.
-6. **Difficulty / progression model.** Themed packs, linear unlock, daily
-   piece, all unlocked? Affects monetization and meta UI.
-7. **Monetization.** Premium one-shot (e.g. $4.99), free + IAP filler
-   packs, free + puzzle-pack IAP, ad-supported? *Recommendation: premium
-   + cosmetic filler packs; ads are tonally wrong for a zen title.*
-8. **Account & cross-device save.** Local-only, iCloud/Google
-   Play Games Saved Games, or a custom backend? (Custom backend is a
-   large, optional scope.)
-9. **AR mode?** "Place the assembly on your coffee table." Strong demo,
-   but expands testing surface to ARKit + ARCore. Cut for v1?
-10. **Photo / share mode?** Watermarked render export. Probably yes for
-    organic marketing.
-11. **Filler unlock cadence.** Are all 8 fillers available from puzzle 1,
-    or do exotic ones (sunlight, bioluminescent gel) unlock later?
-12. **Audio direction.** Static ambient bed (à la *Monument Valley*), or
-    procedural generative (à la *Mini Metro*)? Per-filler sting on
-    completion?
-13. **Content target for launch.** 10 puzzles? 25? 50? Drives the
-    authoring pipeline's required throughput.
-14. **Live ops?** Daily/weekly free puzzle, seasonal filler skins?
-    (Implies backend.)
+### 6.1 Decisions made
+
+| # | Decision | Notes |
+|---|---|---|
+| D1 | **Snap distance is world-space, scaled to assembly bounding-sphere radius.** Starting tolerance: **1.5% of bounding-sphere radius**, tunable per puzzle. | Replaces the literal "10 px" in the brief — pixels would feel punishing on small pieces and trivial on large ones. Implemented in `Kintsugi.Snap.SnapTolerances.FromBoundingRadius`. |
+| D2 | **Tray pieces are orientation-locked to the camera while held.** They do not rotate at all relative to the player's view. The player rotates the **assembly** to align it with the held piece. | Snap-orientation matching is computed by comparing the held piece's *world* orientation against `(assemblyRotation · pieceTargetLocalRotation)`. |
+| D3 | **Piece-count range per puzzle: 8–60 (initial).** | Drives memory budgets, tray UI layout, and snap-tolerance auto-scaling. Revisit after Phase 1 player testing. |
+| D4 | **Monetization: free with interstitial ads every 2–3 completed puzzles, premium one-time IAP removes all ads, plus cosmetic IAP filler packs available to all players.** | "Premium" here is the ad-removal IAP, not a paid app. A single SKU codepath gates all ad calls; filler-pack IAPs are independent of the ad-removal SKU; analytics must track conversion from free-with-ads to ad-removed (the dominant funnel). Interstitials only between puzzles, never mid-puzzle, never on the finisher animation. |
+| D5 | **Strictly tray ↔ assembly.** Tray pieces can only snap to the existing assembly, not to each other off-assembly. There is no "sub-assembly" concept; the assembly is always a single connected component anchored on the starter piece. | This makes the data model trivial (the assembly is one tree rooted at the starter) and lets the pipeline statically verify that every puzzle is reassemblable: every piece must be reachable from the starter via the neighbour graph. Enforced at build time by `pipeline/validator.py`. |
+
+### 6.2 Starter content (for pipeline bring-up)
+
+Two synthetic puzzles will exercise the Blender → manifest pipeline
+before any artist-authored content exists:
+
+- **`cube_8`** — a unit cube fractured into 8 equal sub-cubes (2×2×2).
+  The cleanest possible adjacency graph (each shard has exactly 3
+  neighbours).
+- **`sphere_8_slices`** — a unit sphere sliced into 8 parallel sheets
+  along Y. Tests the pipeline against curved surfaces and a strictly
+  linear adjacency graph (each shard has 1–2 neighbours).
+
+### 6.3 Still open
+
+3. **Difficulty / progression model.** Themed packs, linear unlock,
+   daily piece, all unlocked? Affects meta UI.
+4. **Account & cross-device save.** Local-only, iCloud / Google Play
+   Games Saved Games, or a custom backend?
+5. **AR mode?** Cut for v1?
+6. **Photo / share mode?** Probably yes for organic marketing.
+7. **Filler unlock cadence.** All 8 from puzzle 1, or unlock progression?
+8. **Audio direction.** Static ambient bed vs procedural generative?
+9. **Content target for launch.** 10 / 25 / 50 puzzles?
+10. **Live ops?** Daily / weekly free puzzle, seasonal filler skins?
 
 ---
 
